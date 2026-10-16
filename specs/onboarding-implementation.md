@@ -19,7 +19,14 @@ Implementar el onboarding guiado para la cohorte MVP de Peru, de modo que el usu
 - **Mensajeria:** RabbitMQ y Kafka forman parte del stack del proyecto. No se define cual transportara los eventos de onboarding ni si ambos participan en este flujo.
 - **Coordinacion de Kafka:** Zookeeper; no introduce comportamiento funcional de onboarding.
 
-No agregar contratos HTTP, esquemas de datos ni contratos de eventos hasta que se aprueben explicitamente.
+## Contrato API asociado
+
+- **Contrato:** [Swagger de mocks, grupo 5](https://bcp-ai-labs.pages.dev/dia-04/mocks/swagger?group=5).
+- **Operacion asignada:** W1 - OnBoarding.
+- Consumir la operacion W1 respetando su metodo, ruta, parametros, esquemas de solicitud y respuesta, errores y autenticacion tal como los publique el contrato.
+- No duplicar ni modificar el contrato. La ruta y los esquemas concretos deben verificarse en Swagger antes de implementar; no estan disponibles en el workspace.
+
+No agregar contratos HTTP, esquemas de datos ni contratos de eventos que no formen parte del contrato publicado o no hayan sido aprobados explicitamente.
 
 ## Alcance
 

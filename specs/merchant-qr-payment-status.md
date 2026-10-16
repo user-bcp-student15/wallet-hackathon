@@ -36,7 +36,7 @@ El comercio necesita información confiable y consultable sobre cada pago QR par
 
 - Elegir entre app, web o ambos como canal de consulta.
 - Definir el conjunto de estados del lanzamiento; está pendiente de definición.
-- Especificar APIs, integraciones, mecanismos de recepción de callbacks/eventos o detalles de almacenamiento.
+- Cambiar el contrato API publicado o definir integraciones, mecanismos de recepción de callbacks/eventos o detalles de almacenamiento que no estén descritos en el contrato.
 - Definir conciliación, reversos, disputas u otros procesos operativos no descritos en la historia.
 - Añadir flujos de pago distintos de la visibilidad de pagos QR para comercios.
 
@@ -50,7 +50,8 @@ El comercio necesita información confiable y consultable sobre cada pago QR par
 ## Contratos afectados/protegidos
 
 - **Afectados a nivel de comportamiento:** identificación de intentos QR, consulta y actualización de estado, y filtros del historial.
-- **Protegidos:** la historia no especifica contratos técnicos de integración. No se deben inferir ni cambiar contratos de pago o de otros flujos a partir de esta especificación.
+- **Contrato API asociado:** [Swagger de mocks, grupo 5](https://bcp-ai-labs.pages.dev/dia-04/mocks/swagger?group=5), operación asignada W2 - Pago a contacto. El método, la ruta, los esquemas y los errores deben tomarse del contrato publicado; no se deben inferir ni modificar.
+- **Protegidos:** no cambiar contratos de pago u otros flujos. La asociación a W2 sigue la asignación aprobada y no modifica por sí sola los criterios funcionales de visibilidad QR definidos en esta especificación.
 - El conjunto de estados y el canal de consulta quedan pendientes; esta especificación no fija sus detalles.
 
 ## Riesgos, supuestos y preguntas abiertas

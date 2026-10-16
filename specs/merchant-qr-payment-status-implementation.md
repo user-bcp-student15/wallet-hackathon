@@ -23,7 +23,14 @@ Implementar la consulta de estado e historial de pagos QR para comercios del MVP
 - **Coordinacion de Kafka:** Zookeeper; no define comportamiento funcional de Pagos QR.
 - **Contenedores:** Docker y Docker Compose.
 
-No asumir un unico riel de procesamiento. No definir ni cambiar contratos HTTP, de proveedor, de persistencia o de eventos sin aprobacion.
+## Contrato API asociado
+
+- **Contrato:** [Swagger de mocks, grupo 5](https://bcp-ai-labs.pages.dev/dia-04/mocks/swagger?group=5).
+- **Operacion asignada:** W3 - Pago QR comercio.
+- Consumir la operacion W3 respetando su metodo, ruta, parametros, esquemas de solicitud y respuesta, errores y autenticacion tal como los publique el contrato.
+- La ruta y los esquemas concretos deben verificarse en Swagger antes de implementar; no estan disponibles en el workspace.
+
+No asumir un unico riel de procesamiento. No duplicar ni cambiar contratos HTTP, de proveedor, de persistencia o de eventos sin aprobacion.
 
 ## Comportamiento a preservar
 
