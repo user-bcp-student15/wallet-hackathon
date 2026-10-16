@@ -27,20 +27,25 @@ El stack queda registrado como contexto del proyecto. Las versiones, responsabil
 
 El detalle original de estas epicas esta en [docs/epics.md](./docs/epics.md).
 
-## Estructura inicial
+## Servicios locales
 
 ```text
-src/agents/skills/  Habilidades de agentes
-infra/              Recursos de infraestructura
-tests/              Pruebas
-docs/               Documentacion funcional y tecnica
-demo/               Material del flujo de demostracion
+wallet-db        PostgreSQL en localhost:5432
+wallet-services  Flask en localhost:5000; GET /health verifica PostgreSQL
+wallet-front     React/Vite en localhost:5173
 ```
+
+Copiar `.env.example` a `.env` y cambiar la contrasena local antes de iniciar. La contrasena de respaldo definida en Compose es solo para desarrollo local.
+
+Con Podman, desde la carpeta `wallet-hackathon`:
+
+```powershell
+podman machine start
+podman compose up --build
+```
+
+`podman compose` requiere que haya un proveedor Compose instalado, como `podman-compose` o `docker-compose`.
 
 ## Estado
 
-Solo se preparo la estructura base y se registro el contexto de las epicas y del stack tecnologico. Los contratos, las reglas de pago, el comportamiento de los agentes y la configuracion ejecutable de los servicios quedan pendientes de definicion.
-
-## Inicio
-
-Completar `.env.example`, `requirements.txt` y `docker-compose.yml` al definir las versiones y los servicios concretos del MVP.
+La base local de tres servicios esta configurada para desarrollo. Los contratos funcionales, las reglas de pago, el comportamiento de los agentes y los servicios de mensajeria siguen pendientes de definicion.
