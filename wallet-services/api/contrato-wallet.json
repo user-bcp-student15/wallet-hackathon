@@ -1,0 +1,965 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Wallet Middleware API",
+    "version": "1.0.0",
+    "description": "Contrato local de los endpoints Flask del middleware Wallet. Las solicitudes se reenvian a las operaciones W1, W2 y W3 del mock del grupo 5 sin modificar sus cuerpos ni respuestas."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:5000",
+      "description": "Backend local"
+    }
+  ],
+  "paths": {
+    "/crear-wallet": {
+      "post": {
+        "operationId": "crearWallet",
+        "summary": "Crear wallet con KYC",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWalletRequest"
+              },
+              "example": {
+                "documentType": "TEST",
+                "document": "TEST-001",
+                "scenario": "APPROVED"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Wallet creada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Kyc"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "413": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/consultar-kyc/{verification_id}": {
+      "get": {
+        "operationId": "consultarKyc",
+        "summary": "Consultar verificacion KYC",
+        "parameters": [
+          {
+            "name": "verification_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verificacion encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Kyc"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/resolver-decision/{verification_id}": {
+      "post": {
+        "operationId": "resolverDecision",
+        "summary": "Resolver decision de verificacion KYC",
+        "parameters": [
+          {
+            "name": "verification_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveDecisionRequest"
+              },
+              "example": {
+                "decision": "ACTIVE"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Decision aplicada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Kyc"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "413": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/consulta-estado-saldos/{wallet_id}": {
+      "get": {
+        "operationId": "consultarEstadoSaldos",
+        "summary": "Consultar estado y saldos de wallet",
+        "parameters": [
+          {
+            "name": "wallet_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wallet encontrada; saldos expresados en centimos PEN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Wallet"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/payments": {
+      "get": {
+        "operationId": "getPayments",
+        "summary": "Historial filtrado por walletId",
+        "description": "Lista el historial de una wallet. walletId es opcional y vale wallet-demo por defecto. Una wallet sin pagos o inexistente produce []. Sin paginacion ni filtros de fechas. No lista todas las wallets del grupo.",
+        "parameters": [
+          {
+            "name": "walletId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "wallet-demo"
+            },
+            "description": "Wallet del historial, predeterminada wallet-demo."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historial de pagos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Payment"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "postPayments",
+        "summary": "Crear pago de contacto o comercio",
+        "description": "Crea una intencion PENDING y reserva saldo. Requiere Idempotency-Key unica por wallet. Consulte el contrato W2 para escenarios y errores de negocio.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "description": "Clave unica por wallet; reutilizar la misma clave y contenido al reintentar."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentRequest"
+              },
+              "example": {
+                "walletId": "wallet-demo",
+                "recipient": "contact-demo",
+                "amountCents": 1500,
+                "currency": "PEN",
+                "scenario": "APPROVED"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reintento idempotente; pago existente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Pago aceptado para procesamiento",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "410": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "413": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "504": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/payments/{id}": {
+      "get": {
+        "operationId": "getPaymentsByid",
+        "summary": "Consultar pago",
+        "description": "Consulta el estado local del pago. No consulta al proveedor ni confirma eventos. Pago inexistente: 404 NOT_FOUND.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pago encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/payments/{id}/receipt": {
+      "get": {
+        "operationId": "getPaymentsByidReceipt",
+        "summary": "Comprobante de pago exitoso o reversado",
+        "description": "Obtiene el comprobante cuando el pago esta SUCCEEDED o REVERSED. En PENDING o REJECTED devuelve 409 RECEIPT_NOT_READY. No genera PDF.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comprobante disponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/provider/payments/{id}": {
+      "get": {
+        "operationId": "getProviderPaymentsByid",
+        "summary": "Consultar fuente del proveedor",
+        "description": "Consulta el estado del proveedor simulado usando el mismo ID del pago. No aplica el resultado a la wallet.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado del proveedor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderPayment"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/qrs": {
+      "post": {
+        "operationId": "postQrs",
+        "summary": "Generar payload QR de prueba",
+        "description": "Crea texto qrmock:ID para merchant-demo. No genera imagen ni valida EMVCo.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQrRequest"
+              },
+              "example": {
+                "merchantId": "merchant-demo",
+                "amountCents": 2200,
+                "expiresInSeconds": 300
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payload QR generado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Qr"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "413": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/qrs/resolve": {
+      "post": {
+        "operationId": "postQrsResolve",
+        "summary": "Resolver payload local",
+        "description": "Resuelve el payload y devuelve comercio y monto; no crea pagos.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveQrRequest"
+              },
+              "example": {
+                "payload": "qrmock:REEMPLAZAR_ID_QR"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payload QR resuelto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResolvedQr"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "410": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "413": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateWalletRequest": {
+        "type": "object",
+        "properties": {
+          "documentType": {
+            "type": "string",
+            "enum": [
+              "TEST"
+            ],
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Solo TEST. No enviar documentos reales."
+          },
+          "document": {
+            "type": "string",
+            "pattern": "^TEST-",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Documento ficticio con prefijo TEST-."
+          },
+          "scenario": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "REJECTED",
+              "MANUAL_REVIEW",
+              "UNAVAILABLE"
+            ],
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Escenario del proveedor simulado. Predeterminado APPROVED.",
+            "default": "APPROVED"
+          }
+        },
+        "required": [
+          "documentType",
+          "document"
+        ]
+      },
+      "ResolveDecisionRequest": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "REJECTED"
+            ],
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Decision final del operador sobre la verificacion."
+          }
+        },
+        "required": [
+          "decision"
+        ]
+      },
+      "Kyc": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID de verificacion KYC."
+          },
+          "wallet_id": {
+            "type": "string",
+            "description": "ID de la wallet creada."
+          },
+          "scenario": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "REJECTED",
+              "MANUAL_REVIEW"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "PENDING",
+              "REJECTED"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "wallet_id",
+          "scenario",
+          "status"
+        ]
+      },
+      "Wallet": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "PENDING",
+              "REJECTED"
+            ]
+          },
+          "balance": {
+            "type": "integer",
+            "description": "Saldo contable en centimos."
+          },
+          "reserved": {
+            "type": "integer",
+            "description": "Suma de pagos PENDING en centimos."
+          },
+          "available": {
+            "type": "integer",
+            "description": "balance menos reserved."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "PEN"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "balance",
+          "reserved",
+          "available",
+          "currency"
+        ]
+      },
+      "CreatePaymentRequest": {
+        "type": "object",
+        "properties": {
+          "walletId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "ID de wallet. Para pagos con fondos usa wallet-demo."
+          },
+          "recipient": {
+            "type": "string",
+            "enum": [
+              "contact-demo",
+              "merchant-demo"
+            ],
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Destinatario externo de prueba."
+          },
+          "amountCents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000,
+            "description": "Importe en centimos PEN. 1500 = S/ 15.00."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "PEN"
+            ],
+            "minLength": 1,
+            "maxLength": 200,
+            "default": "PEN"
+          },
+          "scenario": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "REJECTED",
+              "PENDING",
+              "DELAYED_APPROVAL",
+              "TIMEOUT_AFTER_PROCESSING",
+              "PROVIDER_ERROR"
+            ],
+            "minLength": 1,
+            "maxLength": 200,
+            "default": "APPROVED"
+          },
+          "qrId": {
+            "type": "string",
+            "nullable": true,
+            "description": "ID opcional del QR creado en este grupo."
+          }
+        },
+        "required": [
+          "walletId",
+          "recipient",
+          "amountCents"
+        ]
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "wallet_id": {
+            "type": "string"
+          },
+          "recipient": {
+            "type": "string",
+            "enum": [
+              "contact-demo",
+              "merchant-demo"
+            ]
+          },
+          "amount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000,
+            "description": "Importe entero en centimos PEN."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SUCCEEDED",
+              "REJECTED",
+              "REVERSED"
+            ]
+          },
+          "scenario": {
+            "type": "string"
+          },
+          "idem": {
+            "type": "string",
+            "description": "Clave de idempotencia recibida."
+          },
+          "fingerprint": {
+            "description": "Dato interno; no usar para construir la interfaz.",
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "nullable": true
+                }
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "wallet_id",
+          "recipient",
+          "amount",
+          "status",
+          "scenario",
+          "idem",
+          "fingerprint"
+        ]
+      },
+      "Receipt": {
+        "type": "object",
+        "properties": {
+          "receiptId": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string"
+          },
+          "amountCents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000,
+            "description": "Importe entero en centimos PEN."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "PEN"
+            ]
+          },
+          "recipient": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SUCCEEDED",
+              "REVERSED"
+            ]
+          }
+        },
+        "required": [
+          "receiptId",
+          "paymentId",
+          "amountCents",
+          "currency",
+          "recipient",
+          "status"
+        ]
+      },
+      "ProviderPayment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Mismo ID que el pago de la wallet."
+          },
+          "amount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000,
+            "description": "Importe entero en centimos PEN."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SUCCEEDED",
+              "REJECTED",
+              "REVERSED"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "amount",
+          "status"
+        ]
+      },
+      "CreateQrRequest": {
+        "type": "object",
+        "properties": {
+          "merchantId": {
+            "type": "string",
+            "enum": [
+              "merchant-demo"
+            ],
+            "minLength": 1,
+            "maxLength": 200,
+            "default": "merchant-demo"
+          },
+          "amountCents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000,
+            "nullable": true,
+            "description": "Importe en centimos PEN; null permite monto abierto."
+          },
+          "expiresInSeconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 86400,
+            "default": 300
+          }
+        }
+      },
+      "Qr": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "string",
+            "description": "Texto qrmock:ID para codificar en QR."
+          },
+          "amountCents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000,
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "PEN"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "payload",
+          "amountCents",
+          "currency"
+        ]
+      },
+      "ResolveQrRequest": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Texto qrmock:ID devuelto por POST /qrs."
+          }
+        },
+        "required": [
+          "payload"
+        ]
+      },
+      "ResolvedQr": {
+        "type": "object",
+        "properties": {
+          "merchantId": {
+            "type": "string"
+          },
+          "merchantName": {
+            "type": "string"
+          },
+          "amountCents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000000,
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "PEN"
+            ]
+          }
+        },
+        "required": [
+          "merchantId",
+          "merchantName",
+          "amountCents",
+          "currency"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Codigo estable del error."
+          },
+          "processed": {
+            "type": "boolean"
+          },
+          "paymentId": {
+            "type": "string",
+            "description": "Pago creado aunque la respuesta sea 504."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SUCCEEDED",
+              "REJECTED",
+              "REVERSED"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      }
+    },
+    "responses": {
+      "ErrorResponse": {
+        "description": "Error publicado por el mock Wallet o indisponibilidad del proveedor",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}
