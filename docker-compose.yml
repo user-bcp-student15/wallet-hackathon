@@ -1,2 +1,2 @@
-# Plantilla intencionalmente vacia: definir servicios tras confirmar el stack.
+# Plantilla intencionalmente vacia: definir servicios y versiones del stack acordado.
 services: {}

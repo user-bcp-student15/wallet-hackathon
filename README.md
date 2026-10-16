@@ -4,7 +4,17 @@ Base del proyecto para demostrar de inicio a fin una wallet simple y segura: reg
 
 ## Objetivo del MVP
 
-Una persona debe poder completar un pago de bajo monto y entender inmediatamente si fue realizado, rechazado, duplicado o si fallo y requiere una accion. Los agentes se incorporaran donde agreguen valor al flujo; esta estructura no presupone aun un framework ni una arquitectura de agentes.
+Una persona debe poder completar un pago de bajo monto y entender inmediatamente si fue realizado, rechazado, duplicado o si fallo y requiere una accion. Los agentes se incorporaran donde agreguen valor al flujo; su framework y arquitectura siguen pendientes de definicion.
+
+## Stack tecnologico acordado
+
+- **Backend:** Python con Flask.
+- **Persistencia:** PostgreSQL.
+- **Mensajeria:** RabbitMQ y Kafka, con Zookeeper para la coordinacion de Kafka.
+- **Frontend:** React.
+- **Contenedores:** Docker y Docker Compose.
+
+El stack queda registrado como contexto del proyecto. Las versiones, responsabilidades concretas de cada broker y configuraciones de servicios siguen pendientes de definicion.
 
 ## Epicas de contexto
 
@@ -29,8 +39,8 @@ demo/               Material del flujo de demostracion
 
 ## Estado
 
-Solo se preparo la estructura base y se registro el contexto de las epicas. La tecnologia, los contratos, las reglas de pago y el comportamiento de los agentes quedan pendientes de confirmacion antes de avanzar.
+Solo se preparo la estructura base y se registro el contexto de las epicas y del stack tecnologico. Los contratos, las reglas de pago, el comportamiento de los agentes y la configuracion ejecutable de los servicios quedan pendientes de definicion.
 
 ## Inicio
 
-Completar `.env.example`, `requirements.txt` y `docker-compose.yml` cuando se confirme el stack y los servicios del MVP.
+Completar `.env.example`, `requirements.txt` y `docker-compose.yml` al definir las versiones y los servicios concretos del MVP.

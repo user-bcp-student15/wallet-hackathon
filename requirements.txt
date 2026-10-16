@@ -1,1 +1,1 @@
-# Dependencias Python pendientes de definir al confirmar el stack.
+# Stack Python acordado: Flask. Definir dependencias y versiones al concretar el MVP.
