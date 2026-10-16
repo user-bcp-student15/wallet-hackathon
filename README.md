@@ -41,8 +41,10 @@ Con Podman, desde la carpeta `wallet-hackathon`:
 
 ```powershell
 podman machine start
-podman compose up --build
+podman compose up -d
 ```
+
+El inicio predeterminado levanta solo `wallet-db`. Para iniciar tambien Flask y React, ejecuta `podman compose --profile app up --build -d`.
 
 `podman compose` requiere que haya un proveedor Compose instalado, como `podman-compose` o `docker-compose`.
 
