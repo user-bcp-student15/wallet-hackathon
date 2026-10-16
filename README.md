@@ -11,7 +11,7 @@ Una persona debe poder completar un pago de bajo monto y entender inmediatamente
 - **Backend:** Python con Flask.
 - **Persistencia:** PostgreSQL.
 - **Mensajeria:** RabbitMQ y Kafka, con Zookeeper para la coordinacion de Kafka.
-- **Frontend:** React.
+- **Frontend:** Angular 21, TypeScript 5.9 y CSS propio.
 - **Contenedores:** Docker y Docker Compose.
 
 El stack queda registrado como contexto del proyecto. Las versiones, responsabilidades concretas de cada broker y configuraciones de servicios siguen pendientes de definicion.
@@ -85,8 +85,13 @@ El detalle original de estas epicas esta en [docs/epics.md](./docs/epics.md).
 
 ```text
 wallet-db        PostgreSQL en localhost:5432
+<<<<<<< HEAD
 wallet-services  Flask middleware previsto en localhost:5000
 wallet-front     React/Vite previsto en localhost:5173
+=======
+wallet-services  Flask en localhost:5000; GET /health verifica el middleware
+wallet-front     Angular servido por Nginx en localhost:5173
+>>>>>>> 7441c56af21d5d8f0a86309f377c4c4a0d5be5d1
 ```
 
 Copiar `.env.example` a `.env` y cambiar la contrasena local antes de iniciar. La contrasena de respaldo definida en Compose es solo para desarrollo local.
@@ -95,12 +100,21 @@ Con Podman, desde la carpeta `wallet-hackathon`:
 
 ```powershell
 podman machine start
+<<<<<<< HEAD
 podman compose up --build -d
 ```
 
 El inicio predeterminado levanta `wallet-db` y `wallet-services`. `wallet-front` sigue pendiente; el perfil `app` no se puede iniciar hasta crear su Dockerfile y aplicación.
+=======
+podman-compose up -d
+```
 
-`podman compose` requiere que haya un proveedor Compose instalado, como `podman-compose` o `docker-compose`.
+El inicio predeterminado levanta solo `wallet-db`. Para iniciar Flask y Angular, ejecuta `podman-compose --profile app up --build -d`.
+>>>>>>> 7441c56af21d5d8f0a86309f377c4c4a0d5be5d1
+
+El middleware actual reenvia solicitudes al mock externo. PostgreSQL esta disponible en Compose, pero Flask aun no se conecta a esa base.
+
+El comando directo `podman-compose` debe estar instalado para usar los comandos anteriores.
 
 ## API de wallet-services
 
