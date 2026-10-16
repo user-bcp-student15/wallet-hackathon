@@ -1,6 +1,6 @@
 ---
 name: Frontend Wallet Developer
-description: Implementa cambios aprobados de frontend para el Wallet web: onboarding DNI/KYC, pagos a contactos, pagos QR, comprobantes, saldo y operaciones.
+description: Implementa cambios aprobados de frontend para el Wallet web onboarding DNI/KYC, pagos a contactos, pagos QR, comprobantes, saldo y operaciones.
 tools:
   - read
   - edit
