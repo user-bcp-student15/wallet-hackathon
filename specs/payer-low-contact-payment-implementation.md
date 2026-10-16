@@ -25,6 +25,14 @@ Implementar el flujo de pago de bajo monto para la cohorte MVP en Peru, mostrand
 
 No asumir un unico riel de procesamiento. No agregar ni cambiar contratos HTTP, esquemas de persistencia o contratos de eventos sin aprobacion.
 
+## Contrato API asociado
+
+- **Contrato:** [Swagger de mocks, grupo 5](https://bcp-ai-labs.pages.dev/dia-04/mocks/swagger?group=5).
+- **Operacion asignada:** W2 - Pago a contacto.
+- Consumir la operacion W2 respetando exactamente el metodo, la ruta, los parametros, los esquemas de solicitud y respuesta, los errores y la autenticacion definidos en el contrato publicado.
+- W2 aplica al flujo de pago a contacto; no implica que sea el unico riel de pago de la wallet.
+- Los detalles concretos de la operacion deben verificarse en Swagger antes de implementar; no se deben inferir, duplicar ni modificar.
+
 ## Comportamiento a preservar
 
 - Mostrar la identidad del destino y el monto antes de la confirmacion final.
@@ -66,6 +74,9 @@ No asumir un unico riel de procesamiento. No agregar ni cambiar contratos HTTP, 
 - Pruebas de interfaz para revision previa, validacion del monto y presentacion de estados.
 - Pruebas de backend para transiciones asincronas y un unico resultado terminal por intento.
 - Pruebas de reintento e idempotencia que verifiquen que no se creen cobros duplicados.
+- Pruebas de contrato para validar la solicitud y respuesta contra W2.
+- Pruebas de integracion para respuestas exitosas, rechazos y tiempos de espera segun los casos definidos por W2.
+- Validar el comportamiento de reintentos contra las capacidades de idempotencia documentadas por W2; no asumir soporte de una clave de idempotencia.
 - Pruebas de integracion con PostgreSQL para la referencia e historial de pagos exitosos.
 - Pruebas de emision del evento de activacion cuando se aprueben su contrato y transporte.
 - Prueba de arranque con Docker Compose cuando los servicios del MVP esten configurados.
@@ -75,5 +86,6 @@ No asumir un unico riel de procesamiento. No agregar ni cambiar contratos HTTP, 
 - Definir el limite de monto bajo por proveedor o canal.
 - Acordar con Producto las etiquetas visibles de los estados terminales.
 - Definir los estados intermedios, tiempos de espera y regla que determina una expiracion.
+- Verificar en W2 el manejo de solicitudes repetidas y si ofrece garantias o mecanismos de idempotencia.
 - Aprobar el contrato del evento de activacion y la responsabilidad de RabbitMQ/Kafka en su transporte.
 - Definir como se mediran caida en checkout y MAU para evaluar los objetivos de negocio.
