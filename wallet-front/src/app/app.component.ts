@@ -254,6 +254,7 @@ export class AppComponent {
       }
       this.onboardingState = 'success';
       this.onboardingMessage = 'Registro completado. Tu wallet está activa.';
+      this.enterRegisteredDemoWallet();
     } catch (error) {
       this.onboardingState = 'error';
       this.onboardingMessage = error instanceof Error

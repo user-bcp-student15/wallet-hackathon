@@ -48,7 +48,7 @@ describe('AppComponent registration', () => {
     vi.unstubAllGlobals();
   });
 
-  it('registers only through crear-wallet, even when a verification was previously stored', async () => {
+  it('registers and enters the app from an ACTIVE response without calling GET endpoints', async () => {
     component.hasVerification = true;
     component.verificationId = 'previous-kyc';
     component.walletId = 'previous-wallet';
@@ -59,6 +59,8 @@ describe('AppComponent registration', () => {
     expect(walletApi.consultVerification).not.toHaveBeenCalled();
     expect(walletApi.consultWallet).not.toHaveBeenCalled();
     expect(component.onboardingState).toBe('success');
+    expect(component.signedIn).toBe(true);
+    expect(component.page).toBe('home');
   });
 
   it('checks the saved verification ID before allowing login', async () => {
