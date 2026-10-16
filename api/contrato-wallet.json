@@ -1,0 +1,365 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Wallet Middleware API",
+    "version": "1.0.0",
+    "description": "Contrato local de los endpoints Flask del middleware Wallet. Las solicitudes se reenvian a las operaciones asignadas del mock W1 sin modificar sus cuerpos ni respuestas."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:5000",
+      "description": "Backend local"
+    }
+  ],
+  "paths": {
+    "/crear-wallet": {
+      "post": {
+        "operationId": "crearWallet",
+        "summary": "Crear wallet con KYC",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWalletRequest"
+              },
+              "example": {
+                "documentType": "TEST",
+                "document": "TEST-001",
+                "scenario": "APPROVED"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Wallet creada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Kyc"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "413": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/consultar-kyc/{verification_id}": {
+      "get": {
+        "operationId": "consultarKyc",
+        "summary": "Consultar verificacion KYC",
+        "parameters": [
+          {
+            "name": "verification_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verificacion encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Kyc"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/resolver-decision/{verification_id}": {
+      "post": {
+        "operationId": "resolverDecision",
+        "summary": "Resolver decision de verificacion KYC",
+        "parameters": [
+          {
+            "name": "verification_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveDecisionRequest"
+              },
+              "example": {
+                "decision": "ACTIVE"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Decision aplicada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Kyc"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "413": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/consulta-estado-saldos/{wallet_id}": {
+      "get": {
+        "operationId": "consultarEstadoSaldos",
+        "summary": "Consultar estado y saldos de wallet",
+        "parameters": [
+          {
+            "name": "wallet_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wallet encontrada; saldos expresados en centimos PEN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Wallet"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateWalletRequest": {
+        "type": "object",
+        "properties": {
+          "documentType": {
+            "type": "string",
+            "enum": [
+              "TEST"
+            ],
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Solo TEST. No enviar documentos reales."
+          },
+          "document": {
+            "type": "string",
+            "pattern": "^TEST-",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Documento ficticio con prefijo TEST-."
+          },
+          "scenario": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "REJECTED",
+              "MANUAL_REVIEW",
+              "UNAVAILABLE"
+            ],
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Escenario del proveedor simulado. Predeterminado APPROVED.",
+            "default": "APPROVED"
+          }
+        },
+        "required": [
+          "documentType",
+          "document"
+        ]
+      },
+      "ResolveDecisionRequest": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "REJECTED"
+            ],
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Decision final del operador sobre la verificacion."
+          }
+        },
+        "required": [
+          "decision"
+        ]
+      },
+      "Kyc": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID de verificacion KYC."
+          },
+          "wallet_id": {
+            "type": "string",
+            "description": "ID de la wallet creada."
+          },
+          "scenario": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "REJECTED",
+              "MANUAL_REVIEW"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "PENDING",
+              "REJECTED"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "wallet_id",
+          "scenario",
+          "status"
+        ]
+      },
+      "Wallet": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "PENDING",
+              "REJECTED"
+            ]
+          },
+          "balance": {
+            "type": "integer",
+            "description": "Saldo contable en centimos."
+          },
+          "reserved": {
+            "type": "integer",
+            "description": "Suma de pagos PENDING en centimos."
+          },
+          "available": {
+            "type": "integer",
+            "description": "balance menos reserved."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "PEN"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "balance",
+          "reserved",
+          "available",
+          "currency"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Codigo estable del error."
+          },
+          "processed": {
+            "type": "boolean"
+          },
+          "paymentId": {
+            "type": "string",
+            "description": "Pago creado aunque la respuesta sea 504."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SUCCEEDED",
+              "REJECTED",
+              "REVERSED"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      }
+    },
+    "responses": {
+      "ErrorResponse": {
+        "description": "Error publicado por W1 o indisponibilidad del proveedor",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}
